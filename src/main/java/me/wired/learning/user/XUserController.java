@@ -1,13 +1,14 @@
 package me.wired.learning.user;
 
 import me.wired.learning.common.BaseController;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
-@RequestMapping("/api/users")
+@RequestMapping(value = "/api/users", produces = MediaTypes.HAL_JSON_UTF8_VALUE)
 public class XUserController extends BaseController {
 
     private XUserRepository xUserRepository;

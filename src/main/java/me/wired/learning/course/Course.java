@@ -36,9 +36,9 @@ public class Course {
 
     private String location;
 
-    private int defaultPrice;
+    private long defaultPrice;
 
-    private int sellingPrice;
+    private long sellingPrice;
 
     private int maxEnrollment;
 
