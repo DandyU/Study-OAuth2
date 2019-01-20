@@ -23,7 +23,6 @@ public class CourseController extends BaseController {
     private final CourseService courseService;
     private final ModelMapper modelMapper;
 
-    @Autowired
     public CourseController(CourseValidator courseValidator,
                             CourseServiceImpl courseService,
                              ModelMapper modelMapper) {
