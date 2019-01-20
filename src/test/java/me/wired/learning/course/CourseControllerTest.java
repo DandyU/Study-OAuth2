@@ -1,6 +1,7 @@
 package me.wired.learning.course;
 
 import me.wired.learning.common.BaseControllerTest;
+import me.wired.learning.common.TestDescription;
 import org.junit.Test;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
@@ -14,24 +15,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 public class CourseControllerTest extends BaseControllerTest {
 
-    private CourseDto newCourseDto(int i)  {
-        return CourseDto.builder()
-                .name("강좌 " + i)
-                .description("강좌 설명 " + i)
-                .startEnrollmentDateTime(LocalDateTime.of(2019, 2, 1, 00, 0))
-                .endEnrollmentDateTime(LocalDateTime.of(2019, 2, 28, 24, 0))
-                .startCourseDateTime(LocalDateTime.of(2019, 2, 7, 00, 0))
-                .endCourseDateTime(LocalDateTime.of(2019, 2, 28, 24, 0))
-                .location(null)
-                .defaultPrice(100000)
-                .sellingPrice(50000)
-                .maxEnrollment(100)
-                .build();
-    }
-
     @Test
+    @TestDescription("정상 Course 생성")
     public void testCreateCourse() throws Exception {
-        CourseDto courseDto = newCourseDto(1);
+        CourseDto courseDto = newNormalCourseDto(1);
 
         mockMvc.perform(post("/api/courses")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
@@ -47,23 +34,76 @@ public class CourseControllerTest extends BaseControllerTest {
     }
 
     @Test
-    public void testReadCourse() {
+    @TestDescription("비정상 Prices Course 생성")
+    public void testCreateWrongCourse1() throws Exception {
+        CourseDto courseDto = newWrongCourseDto1(1);
+
+        mockMvc.perform(post("/api/courses")
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .accept(MediaTypes.HAL_JSON)
+                .content(objectMapper.writeValueAsString(courseDto)))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+        ;
     }
 
     @Test
-    public void testReadCourses() {
+    @TestDescription("비정상 일시 Course 생성")
+    public void testCreateWrongCourse2() throws Exception {
+        CourseDto courseDto = newWrongCourseDto2(1);
+
+        mockMvc.perform(post("/api/courses")
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .accept(MediaTypes.HAL_JSON)
+                .content(objectMapper.writeValueAsString(courseDto)))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+        ;
     }
 
-    @Test
-    public void testUpdateCourse() {
+    private CourseDto newNormalCourseDto(int i)  {
+        return CourseDto.builder()
+                .name("강좌 " + i)
+                .description("강좌 설명 " + i)
+                .startEnrollmentDateTime(LocalDateTime.of(2019, 2, 1, 0, 0))
+                .endEnrollmentDateTime(LocalDateTime.of(2019, 2, 28, 23, 59))
+                .startCourseDateTime(LocalDateTime.of(2019, 2, 7, 0, 0))
+                .endCourseDateTime(LocalDateTime.of(2019, 2, 28, 23, 59))
+                .location(null)
+                .defaultPrice(100000)
+                .sellingPrice(50000)
+                .maxEnrollment(100)
+                .build();
     }
 
-    @Test
-    public void testDeleteCourse() {
+    private CourseDto newWrongCourseDto1(int i)  {
+        return CourseDto.builder()
+                .name("강좌 " + i)
+                .description("강좌 설명 " + i)
+                .startEnrollmentDateTime(LocalDateTime.of(2019, 2, 1, 0, 0))
+                .endEnrollmentDateTime(LocalDateTime.of(2019, 2, 28, 23, 59))
+                .startCourseDateTime(LocalDateTime.of(2019, 2, 7, 0, 0))
+                .endCourseDateTime(LocalDateTime.of(2019, 2, 28, 23, 59))
+                .location(null)
+                .defaultPrice(100000)
+                .sellingPrice(150000)
+                .maxEnrollment(100)
+                .build();
     }
 
-    @Test
-    public void testDeleteCourses() {
+    private CourseDto newWrongCourseDto2(int i)  {
+        return CourseDto.builder()
+                .name("강좌 " + i)
+                .description("강좌 설명 " + i)
+                .startEnrollmentDateTime(LocalDateTime.of(2019, 2, 1, 0, 0))
+                .endEnrollmentDateTime(LocalDateTime.of(2019, 2, 20, 23, 59))
+                .startCourseDateTime(LocalDateTime.of(2019, 2, 7, 0, 0))
+                .endCourseDateTime(LocalDateTime.of(2019, 2, 28, 23, 59))
+                .location(null)
+                .defaultPrice(100000)
+                .sellingPrice(50000)
+                .maxEnrollment(100)
+                .build();
     }
 
 }
