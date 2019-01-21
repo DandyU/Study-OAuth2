@@ -51,7 +51,18 @@ public class Course {
 
     @PrePersist
     private void initId(){
-        this.setId(UUID.randomUUID().toString());
+        setId(UUID.randomUUID().toString());
     }
 
+    public void update() {
+        if (defaultPrice == 0 && sellingPrice == 0)
+            free = true;
+        else
+            free = false;
+
+        if (location == null || location.trim().isEmpty())
+            offline = false;
+        else
+            offline = true;
+    }
 }

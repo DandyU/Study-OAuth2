@@ -19,6 +19,7 @@ import java.util.UUID;
 @Setter
 @Builder
 public class CourseDto {
+
     @NotEmpty
     private String name;
 
