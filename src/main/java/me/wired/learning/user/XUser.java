@@ -10,7 +10,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Getter
 @Setter
-@EqualsAndHashCode(of = {"id", "subId"})
+@EqualsAndHashCode(of = {"id", "variableId"})
 @Builder
 @Entity
 public class XUser {
@@ -18,7 +18,7 @@ public class XUser {
     @Id
     private String id;
 
-    private String subId;
+    private String variableId;
 
     private String password;
 

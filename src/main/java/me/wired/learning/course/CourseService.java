@@ -19,4 +19,5 @@ public interface CourseService {
     void deleteById(String id);
 
     void deleteAll();
+
 }

@@ -8,6 +8,6 @@ import java.util.Optional;
 @Repository
 public interface XUserRepository extends JpaRepository<XUser, String> {
 
-    Optional<XUser> findBySubId(String subId);
+    Optional<XUser> findByVariableId(String variableId);
 
 }

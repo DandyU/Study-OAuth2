@@ -84,13 +84,13 @@ public class CourseController extends BaseController {
             return badRequest(errors);
 
         Optional<Course> optionalCourse = courseService.findById(id);
-        if (!optionalCourse.isPresent())
+        if (!optionalCourse.isPresent()) {
             return ResponseEntity.notFound().build();
+        }
 
         Course oldCourse = optionalCourse.get();
         modelMapper.map(courseDto, oldCourse);
         oldCourse.update();
-        oldCourse.setId(id);
         Course newCourse = courseService.save(oldCourse);
 
         CourseResource courseResource = new CourseResource(newCourse);

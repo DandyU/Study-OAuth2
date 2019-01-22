@@ -177,8 +177,8 @@ public class CourseControllerTest extends BaseControllerTest {
 
     @Test
     @TestDescription("존재하지 않는 Course 읽기 테스트")
-    public void readNotExistCourse() throws Exception {
-        String id = "NotExistCourse";
+    public void readWrongCourse() throws Exception {
+        String id = "CourseNotExists";
         mockMvc.perform(get("/api/courses/{id}", id)
                 .accept(MediaTypes.HAL_JSON))
                 .andDo(print())
@@ -218,9 +218,9 @@ public class CourseControllerTest extends BaseControllerTest {
                                 headerWithName(HttpHeaders.ACCEPT).description("Accept Header")
                         ),
                         requestParameters(
-                                parameterWithName("page").description("Course request page"),
-                                parameterWithName("size").description("Course request size"),
-                                parameterWithName("sort").description("Course request sort")
+                                parameterWithName("page").description("request page"),
+                                parameterWithName("size").description("request size"),
+                                parameterWithName("sort").description("request sort")
                         ),
                         responseHeaders(
                                 headerWithName(HttpHeaders.CONTENT_TYPE).description("Content Type header")
@@ -323,7 +323,20 @@ public class CourseControllerTest extends BaseControllerTest {
                 .andExpect(jsonPath("free").value(true))
                 .andDo(document("update-course",
                         requestHeaders(
+                                headerWithName(HttpHeaders.CONTENT_TYPE).description("Content Type header"),
                                 headerWithName(HttpHeaders.ACCEPT).description("Accept Header")
+                        ),
+                        requestFields(
+                                fieldWithPath("name").description("Course name"),
+                                fieldWithPath("description").description("Course description"),
+                                fieldWithPath("startEnrollmentDateTime").description("Course startEnrollmentDateTime"),
+                                fieldWithPath("endEnrollmentDateTime").description("Course endEnrollmentDateTime"),
+                                fieldWithPath("startCourseDateTime").description("Course startCourseDateTime"),
+                                fieldWithPath("endCourseDateTime").description("Course endCourseDateTime"),
+                                fieldWithPath("location").description("Course location"),
+                                fieldWithPath("defaultPrice").description("Course defaultPrice"),
+                                fieldWithPath("sellingPrice").description("Course sellingPrice"),
+                                fieldWithPath("maxEnrollment").description("Course maxEnrollment")
                         ),
                         responseHeaders(
                                 headerWithName(HttpHeaders.CONTENT_TYPE).description("Content Type header")
@@ -381,8 +394,8 @@ public class CourseControllerTest extends BaseControllerTest {
 
     @Test
     @TestDescription("존재하지 않는 Course 한개 삭제")
-    public void deleteNotExistCourse() throws Exception {
-        String id = "NotExistCourse";
+    public void deleteWrongCourse() throws Exception {
+        String id = "CourseNotExists";
         mockMvc.perform(delete("/api/courses/{id}", id))
                 .andDo(print())
                 .andExpect(status().isNotFound())

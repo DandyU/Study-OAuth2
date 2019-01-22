@@ -19,7 +19,7 @@ public class XUserDto {
     @NotEmpty
     @Pattern(regexp = REGEX_EMAIL_VALIDATION)
     @Size(min = 1, max = 254)
-    private String subId;
+    private String variableId;
 
     @NotEmpty
     @Size(min = 5, max = 64)
