@@ -26,17 +26,19 @@ repositories {
 }
 
 dependencies {
-    asciidoctor('org.springframework.restdocs:spring-restdocs-asciidoctor:2.0.3.RELEASE')
+    asciidoctor 'org.springframework.restdocs:spring-restdocs-asciidoctor:2.0.3.RELEASE'
     compileOnly 'org.projectlombok:lombok'
     compile 'org.modelmapper:modelmapper:2.3.2'
+    compile 'org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:2.1.2.RELEASE'
 
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
     runtimeOnly 'org.postgresql:postgresql'
 
+    testCompile 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
-    testImplementation('org.springframework.restdocs:spring-restdocs-mockmvc')
+    testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
     testRuntimeOnly 'com.h2database:h2'
 }
 

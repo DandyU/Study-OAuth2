@@ -2,6 +2,7 @@ package me.wired.learning.user;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -10,13 +11,16 @@ import java.util.Optional;
 public class XUserServiceImpl implements XUserService {
 
     private final XUserRepository xUserRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public XUserServiceImpl(XUserRepository xUserRepository) {
+    public XUserServiceImpl(XUserRepository xUserRepository, PasswordEncoder passwordEncoder) {
         this.xUserRepository = xUserRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     public XUser save(XUser user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         return xUserRepository.save(user);
     }
 
