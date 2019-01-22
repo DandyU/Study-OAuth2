@@ -28,6 +28,7 @@ repositories {
 dependencies {
     asciidoctor 'org.springframework.restdocs:spring-restdocs-asciidoctor:2.0.3.RELEASE'
     compileOnly 'org.projectlombok:lombok'
+    compileOnly "org.springframework.boot:spring-boot-configuration-processor"
     compile 'org.modelmapper:modelmapper:2.3.2'
     compile 'org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:2.1.2.RELEASE'
 

@@ -22,6 +22,11 @@ logging:
           descriptor.sql.BasicBinder: TRACE
       springframework:
         security: DEBUG
+pre-user:
+  adminVariableId: admin
+  adminPassword: admin
+  userVariableId: user
+  userPassword: user
 
 ---
 spring:
