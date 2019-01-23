@@ -1,6 +1,8 @@
 package me.wired.learning.course;
 
 import me.wired.learning.common.BaseController;
+import me.wired.learning.user.CurrentXUser;
+import me.wired.learning.user.XUser;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -9,6 +11,7 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
@@ -37,7 +40,7 @@ public class CourseController extends BaseController {
     }
 
     @PostMapping
-    public ResponseEntity createCourse(@RequestBody @Valid CourseDto courseDto, Errors errors) {
+    public ResponseEntity createCourse(@RequestBody @Valid CourseDto courseDto, Errors errors, @CurrentXUser XUser xUser) {
         if (errors.hasErrors())
             return badRequest(errors);
 
@@ -47,6 +50,7 @@ public class CourseController extends BaseController {
 
         Course course = modelMapper.map(courseDto, Course.class);
         course.update();
+        course.setUser(xUser);
         Course newCourse = courseService.save(course);
         CourseResource courseResource = new CourseResource(newCourse);
         courseResource.add(new Link("/static/docs/index.html#resources-course-create").withRel("profile"));
@@ -54,7 +58,7 @@ public class CourseController extends BaseController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity readCourse(@PathVariable String id) {
+    public ResponseEntity readCourse(@PathVariable String id, @CurrentXUser XUser xUser) {
         Optional<Course> optionalCourse = courseService.findById(id);
         if (!optionalCourse.isPresent())
             return ResponseEntity.notFound().build();
@@ -66,7 +70,7 @@ public class CourseController extends BaseController {
     }
 
     @GetMapping
-    public ResponseEntity readCourses(Pageable pageable, PagedResourcesAssembler<Course> assembler) {
+    public ResponseEntity readCourses(Pageable pageable, PagedResourcesAssembler<Course> assembler, @CurrentXUser XUser xUser) {
         Page<Course> page = courseService.findAll(pageable);
         PagedResources<Resource<Course>> resource = assembler.toResource(page, e -> new CourseResource(e));
         resource.add(linkTo(CourseController.class).withRel("create-course"));
@@ -75,7 +79,7 @@ public class CourseController extends BaseController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity updateCourse(@PathVariable String id, @RequestBody @Valid CourseDto courseDto, Errors errors) {
+    public ResponseEntity updateCourse(@PathVariable String id, @RequestBody @Valid CourseDto courseDto, Errors errors, @CurrentXUser XUser xUser) {
         if (errors.hasErrors())
             return badRequest(errors);
 
@@ -89,27 +93,36 @@ public class CourseController extends BaseController {
         }
 
         Course oldCourse = optionalCourse.get();
+        if (!xUser.isAdmin() && !oldCourse.getUser().getVariableId().equals(xUser.getVariableId()))
+            return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+
         modelMapper.map(courseDto, oldCourse);
         oldCourse.update();
         Course newCourse = courseService.save(oldCourse);
-
         CourseResource courseResource = new CourseResource(newCourse);
         courseResource.add(new Link("/static/docs/index.html#resources-course-update").withRel("profile"));
         return ResponseEntity.ok().body(courseResource);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity deleteCourse(@PathVariable String id) {
+    public ResponseEntity deleteCourse(@PathVariable String id, @CurrentXUser XUser xUser) {
         Optional<Course> optionalCourse = courseService.findById(id);
         if (!optionalCourse.isPresent())
             return ResponseEntity.notFound().build();
+
+        Course course = optionalCourse.get();
+        if (!xUser.isAdmin() && !course.getUser().getVariableId().equals(xUser.getVariableId()))
+            return new ResponseEntity(HttpStatus.UNAUTHORIZED);
 
         courseService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping()
-    public ResponseEntity deleteCourses() {
+    public ResponseEntity deleteCourses(@CurrentXUser XUser xUser) {
+        if (!xUser.isAdmin())
+            return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+
         courseService.deleteAll();
         return ResponseEntity.noContent().build();
     }

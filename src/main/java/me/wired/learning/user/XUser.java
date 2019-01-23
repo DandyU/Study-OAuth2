@@ -33,4 +33,11 @@ public class XUser {
         this.setId(UUID.randomUUID().toString());
     }
 
+    public boolean isAdmin() {
+        if (roles.contains(XUserRole.ADMIN))
+            return true;
+
+        return false;
+    }
+
 }

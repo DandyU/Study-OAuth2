@@ -10,8 +10,12 @@ import org.springframework.stereotype.Component;
 @Getter
 @Setter
 public class PreUsers {
+
     String adminVariableId;
     String adminPassword;
     String userVariableId;
     String userPassword;
+    String clientId;
+    String clientSecret;
+
 }

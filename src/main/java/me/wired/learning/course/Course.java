@@ -1,7 +1,9 @@
 package me.wired.learning.course;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.*;
 import me.wired.learning.user.XUser;
+import me.wired.learning.user.XUserSerializer;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -47,6 +49,7 @@ public class Course {
     private boolean free;
 
     @ManyToOne
+    @JsonSerialize(using = XUserSerializer.class)
     private XUser user;
 
     @PrePersist

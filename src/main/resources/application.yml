@@ -27,6 +27,8 @@ pre-user:
   adminPassword: admin
   userVariableId: user
   userPassword: user
+  clientId: client
+  clientSecret: client
 
 ---
 spring:

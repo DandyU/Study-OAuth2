@@ -1,8 +1,8 @@
 package me.wired.learning.course;
 
+import me.wired.learning.user.XUser;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
