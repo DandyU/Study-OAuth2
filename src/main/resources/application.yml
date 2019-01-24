@@ -23,11 +23,11 @@ logging:
       springframework:
         security: DEBUG
 pre-user:
-  adminVariableId: admin
+  adminVariableId: admin@gmail.com
   adminPassword: admin
-  userVariableId: user
+  userVariableId: user@gmail.com
   userPassword: user
-  clientId: client
+  clientId: client@gmail.com
   clientSecret: client
 
 ---

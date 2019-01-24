@@ -1,5 +1,6 @@
 package me.wired.learning.user;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import javax.persistence.*;
@@ -20,6 +21,7 @@ public class XUser {
 
     private String variableId;
 
+    @JsonIgnore
     private String password;
 
     private String name;
@@ -33,6 +35,7 @@ public class XUser {
         this.setId(UUID.randomUUID().toString());
     }
 
+    @JsonIgnore
     public boolean isAdmin() {
         if (roles.contains(XUserRole.ADMIN))
             return true;

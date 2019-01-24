@@ -1,8 +1,6 @@
 package me.wired.learning.user;
 
 import me.wired.learning.common.BaseController;
-import me.wired.learning.course.Course;
-import me.wired.learning.course.CourseResource;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,6 +9,7 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
@@ -18,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.net.URI;
-import java.util.List;
 import java.util.Optional;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
@@ -76,7 +74,7 @@ public class XUserController extends BaseController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity updateUser(@PathVariable String id, @RequestBody @Valid XUserDto userDto, Errors errors) {
+    public ResponseEntity updateUser(@PathVariable String id, @RequestBody @Valid XUserDto userDto, Errors errors, @CurrentXUser XUser xUser) {
         if (errors.hasErrors())
             return badRequest(errors);
 
@@ -85,6 +83,9 @@ public class XUserController extends BaseController {
             return ResponseEntity.notFound().build();
 
         XUser oldUser = optionalUser.get();
+        if (!xUser.isAdmin() && !oldUser.getVariableId().equals(xUser.getVariableId()))
+            return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+
         modelMapper.map(userDto, oldUser);
         oldUser.setId(id); // map() 수행했을 때 id 값이 variableId 값으로 변경되는 문제로 추가
         XUser newUser = xUserService.save(oldUser);
@@ -94,10 +95,13 @@ public class XUserController extends BaseController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity deleteUser(@PathVariable String id) {
+    public ResponseEntity deleteUser(@PathVariable String id, @CurrentXUser XUser xUser) {
         Optional<XUser> optionalUser = xUserService.findById(id);
         if (!optionalUser.isPresent())
             return ResponseEntity.notFound().build();
+
+        if (!xUser.isAdmin() && !optionalUser.get().getVariableId().equals(xUser.getVariableId()))
+            return new ResponseEntity(HttpStatus.UNAUTHORIZED);
 
         xUserService.deleteById(id);
         return ResponseEntity.noContent().build();

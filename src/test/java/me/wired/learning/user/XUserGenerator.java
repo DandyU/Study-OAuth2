@@ -5,11 +5,11 @@ import java.util.HashSet;
 
 public class XUserGenerator {
 
-    public static XUserDto newNormalXUserDto(int i) {
+    public static XUserDto newNormalXUserDto(int i, String variableId, String password) {
         return XUserDto.builder()
-                .variableId("test" + i +  "@gmail.com")
-                .name("Steven Allan Spielberg-" + i)
-                .password("12345")
+                .variableId(variableId)
+                .name("Test Name-" + i)
+                .password(password)
                 .roles(new HashSet<>(Arrays.asList(XUserRole.ADMIN, XUserRole.USER)))
                 .build();
     }
@@ -17,9 +17,9 @@ public class XUserGenerator {
     public static XUserDto newWrongXUserDto1() {
         // Invalid email format
         return XUserDto.builder()
-                .variableId("test")
+                .variableId("test") // Invalid ID
                 .name("Steven Allan Spielberg")
-                .password("12345") // Invalid password
+                .password("12345")
                 .roles(new HashSet<>(Arrays.asList(XUserRole.ADMIN, XUserRole.USER)))
                 .build();
     }
@@ -29,7 +29,7 @@ public class XUserGenerator {
         return XUserDto.builder()
                 .variableId("test@gmail.com")
                 .name("Steven Allan Spielberg")
-                .password("1234")
+                .password("1") // Invalid password
                 .roles(new HashSet<>(Arrays.asList(XUserRole.ADMIN, XUserRole.USER)))
                 .build();
     }

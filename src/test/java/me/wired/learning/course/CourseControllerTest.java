@@ -2,22 +2,15 @@ package me.wired.learning.course;
 
 import me.wired.learning.common.BaseControllerTest;
 import me.wired.learning.common.TestDescription;
-import me.wired.learning.user.XUser;
-import me.wired.learning.user.XUserRole;
 import me.wired.learning.user.XUserService;
-import me.wired.learning.yaml.PreUsers;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.json.JacksonJsonParser;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.security.oauth2.common.OAuth2AccessToken;
-import org.springframework.security.oauth2.common.util.Jackson2JsonParser;
 import org.springframework.test.web.servlet.ResultActions;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.stream.IntStream;
 
 import static org.springframework.restdocs.headers.HeaderDocumentation.*;
@@ -28,7 +21,6 @@ import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuild
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.requestParameters;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -36,48 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class CourseControllerTest extends BaseControllerTest {
 
     @Autowired
-    PreUsers preUsers;
-
-    @Autowired
     XUserService xUserService;
-
-    private String getAdminBearerToken() throws Exception {
-        //OAuth2의 Grant Type 중 Password, Refresh Token만 지원
-        final String clientId = preUsers.getClientId();
-        final String clientSecret = preUsers.getClientSecret();
-        final String userVariableId = preUsers.getAdminVariableId();
-        final String userPassword = preUsers.getAdminPassword();
-
-        ResultActions resultActions = mockMvc.perform(post("/oauth/token")
-                .with(httpBasic(clientId, clientSecret))
-                .param("username", userVariableId)
-                .param("password", userPassword)
-                .param("grant_type", "password"))
-                .andDo(print());
-        String jsonData = resultActions.andReturn().getResponse().getContentAsString();
-        Jackson2JsonParser parser = new Jackson2JsonParser();
-        String bearerToken = OAuth2AccessToken.BEARER_TYPE + " " + parser.parseMap(jsonData).get(OAuth2AccessToken.ACCESS_TOKEN).toString();
-        return bearerToken;
-    }
-
-    private String getUserBearerToken() throws Exception {
-        //OAuth2의 Grant Type 중 Password, Refresh Token만 지원
-        final String clientId = preUsers.getClientId();
-        final String clientSecret = preUsers.getClientSecret();
-        final String userVariableId = preUsers.getUserVariableId();
-        final String userPassword = preUsers.getUserPassword();
-
-        ResultActions resultActions = mockMvc.perform(post("/oauth/token")
-                .with(httpBasic(clientId, clientSecret))
-                .param("username", userVariableId)
-                .param("password", userPassword)
-                .param("grant_type", "password"))
-                .andDo(print());
-        String jsonData = resultActions.andReturn().getResponse().getContentAsString();
-        Jackson2JsonParser parser = new Jackson2JsonParser();
-        String bearerToken = OAuth2AccessToken.BEARER_TYPE + " " + parser.parseMap(jsonData).get(OAuth2AccessToken.ACCESS_TOKEN).toString();
-        return bearerToken;
-    }
 
     @Test
     @TestDescription("정상 Course 생성")
@@ -85,7 +36,7 @@ public class CourseControllerTest extends BaseControllerTest {
         CourseDto courseDto = CourseGenerator.newNormalCourseDto(1);
 
         mockMvc.perform(post("/api/courses")
-                .header(HttpHeaders.AUTHORIZATION, getUserBearerToken())
+                .header(HttpHeaders.AUTHORIZATION, getUserBearerToken(null))
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .accept(MediaTypes.HAL_JSON)
                 .content(objectMapper.writeValueAsString(courseDto)))
@@ -97,8 +48,9 @@ public class CourseControllerTest extends BaseControllerTest {
                 .andExpect(jsonPath("free").value(false))
                 .andDo(document("create-course",
                         requestHeaders(
-                                headerWithName(HttpHeaders.CONTENT_TYPE).description("Content Type header"),
-                                headerWithName(HttpHeaders.ACCEPT).description("Accept Header")
+                                headerWithName(HttpHeaders.AUTHORIZATION).description("Authentication credentials for HTTP authentication"),
+                                headerWithName(HttpHeaders.CONTENT_TYPE).description("The MIME type of this content"),
+                                headerWithName(HttpHeaders.ACCEPT).description("Media type(s) that is(/are) acceptable for the response")
                         ),
                         requestFields(
                                 fieldWithPath("name").description("Course name"),
@@ -152,7 +104,7 @@ public class CourseControllerTest extends BaseControllerTest {
         CourseDto courseDto = CourseGenerator.newWrongCourseDto1(1);
 
         mockMvc.perform(post("/api/courses")
-                .header(HttpHeaders.AUTHORIZATION, getUserBearerToken())
+                .header(HttpHeaders.AUTHORIZATION, getUserBearerToken(null))
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .accept(MediaTypes.HAL_JSON)
                 .content(objectMapper.writeValueAsString(courseDto)))
@@ -167,7 +119,7 @@ public class CourseControllerTest extends BaseControllerTest {
         CourseDto courseDto = CourseGenerator.newWrongCourseDto2(1);
 
         mockMvc.perform(post("/api/courses")
-                .header(HttpHeaders.AUTHORIZATION, getUserBearerToken())
+                .header(HttpHeaders.AUTHORIZATION, getUserBearerToken(null))
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .accept(MediaTypes.HAL_JSON)
                 .content(objectMapper.writeValueAsString(courseDto)))
@@ -182,7 +134,7 @@ public class CourseControllerTest extends BaseControllerTest {
         CourseDto courseDto = CourseGenerator.newNormalCourseDto(100);
 
         ResultActions resultActions = mockMvc.perform(post("/api/courses")
-                .header(HttpHeaders.AUTHORIZATION, getUserBearerToken())
+                .header(HttpHeaders.AUTHORIZATION, getUserBearerToken(null))
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .accept(MediaTypes.HAL_JSON)
                 .content(objectMapper.writeValueAsString(courseDto)))
@@ -200,7 +152,7 @@ public class CourseControllerTest extends BaseControllerTest {
                 .andExpect(jsonPath("id").exists())
                 .andDo(document("read-course",
                         requestHeaders(
-                                headerWithName(HttpHeaders.ACCEPT).description("Accept Header")
+                                headerWithName(HttpHeaders.ACCEPT).description("Media type(s) that is(/are) acceptable for the response")
                         ),
                         responseHeaders(
                                 headerWithName(HttpHeaders.CONTENT_TYPE).description("Content Type header")
@@ -249,7 +201,7 @@ public class CourseControllerTest extends BaseControllerTest {
     @Test
     @TestDescription("여러 개의 Course 읽기 테스트(1 페이지, 10개, name/desc 정렬)")
     public void readCourses1() throws Exception {
-        final String bearerToken = getUserBearerToken();
+        final String bearerToken = getUserBearerToken(null);
         IntStream.range(0, 30).forEach(i -> {
             CourseDto courseDto = CourseGenerator.newNormalCourseDto(i);
             try {
@@ -277,7 +229,7 @@ public class CourseControllerTest extends BaseControllerTest {
                 .andExpect(status().isOk())
                 .andDo(document("read-courses",
                         requestHeaders(
-                                headerWithName(HttpHeaders.ACCEPT).description("Accept Header")
+                                headerWithName(HttpHeaders.ACCEPT).description("Media type(s) that is(/are) acceptable for the response")
                         ),
                         requestParameters(
                                 parameterWithName("page").description("request page"),
@@ -349,7 +301,7 @@ public class CourseControllerTest extends BaseControllerTest {
     @Test
     @TestDescription("Course 수정 테스트")
     public void updateNormalCourse() throws Exception {
-        final String bearerToken = getUserBearerToken();
+        final String bearerToken = getUserBearerToken(null);
         CourseDto courseDto = CourseGenerator.newNormalCourseDto(100);
         ResultActions resultActions = mockMvc.perform(post("/api/courses")
                 .header(HttpHeaders.AUTHORIZATION, bearerToken)
@@ -388,8 +340,9 @@ public class CourseControllerTest extends BaseControllerTest {
                 .andExpect(jsonPath("free").value(true))
                 .andDo(document("update-course",
                         requestHeaders(
-                                headerWithName(HttpHeaders.CONTENT_TYPE).description("Content Type header"),
-                                headerWithName(HttpHeaders.ACCEPT).description("Accept Header")
+                                headerWithName(HttpHeaders.AUTHORIZATION).description("Authentication credentials for HTTP authentication"),
+                                headerWithName(HttpHeaders.CONTENT_TYPE).description("The MIME type of this content"),
+                                headerWithName(HttpHeaders.ACCEPT).description("Media type(s) that is(/are) acceptable for the response")
                         ),
                         requestFields(
                                 fieldWithPath("name").description("Course name"),
@@ -439,7 +392,7 @@ public class CourseControllerTest extends BaseControllerTest {
     @Test
     @TestDescription("Course 한개 삭제")
     public void deleteCourse() throws Exception {
-        final String bearerToken = getUserBearerToken();
+        final String bearerToken = getUserBearerToken(null);
         CourseDto courseDto = CourseGenerator.newNormalCourseDto(40);
         ResultActions resultActions = mockMvc.perform(post("/api/courses")
                 .header(HttpHeaders.AUTHORIZATION, bearerToken)
@@ -456,7 +409,11 @@ public class CourseControllerTest extends BaseControllerTest {
                 .header(HttpHeaders.AUTHORIZATION, bearerToken))
                 .andDo(print())
                 .andExpect(status().isNoContent())
-                .andDo(document("delete-course"))
+                .andDo(document("delete-course",
+                        requestHeaders(
+                                headerWithName(HttpHeaders.AUTHORIZATION).description("Authentication credentials for HTTP authentication")
+                        )
+                ))
         ;
     }
 
@@ -465,7 +422,7 @@ public class CourseControllerTest extends BaseControllerTest {
     public void deleteWrongCourse() throws Exception {
         String id = "CourseNotExists";
         mockMvc.perform(delete("/api/courses/{id}", id)
-                .header(HttpHeaders.AUTHORIZATION, getUserBearerToken()))
+                .header(HttpHeaders.AUTHORIZATION, getUserBearerToken(null)))
                 .andDo(print())
                 .andExpect(status().isNotFound())
         ;
@@ -474,7 +431,7 @@ public class CourseControllerTest extends BaseControllerTest {
     @Test
     @TestDescription("Course 전체 삭제")
     public void deleteCourses() throws Exception {
-        final String bearerToken = getAdminBearerToken();
+        final String bearerToken = getAdminBearerToken(null);
         IntStream.range(0, 30).forEach(i -> {
             CourseDto courseDto = CourseGenerator.newNormalCourseDto(i);
             try {
@@ -494,7 +451,11 @@ public class CourseControllerTest extends BaseControllerTest {
                 .header(HttpHeaders.AUTHORIZATION, bearerToken))
                 .andDo(print())
                 .andExpect(status().isNoContent())
-                .andDo(document("delete-courses"))
+                .andDo(document("delete-courses",
+                        requestHeaders(
+                                headerWithName(HttpHeaders.AUTHORIZATION).description("Authentication credentials for HTTP authentication")
+                        )
+                ))
         ;
     }
 }

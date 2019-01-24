@@ -32,16 +32,20 @@ public class XUserControllerTest extends BaseControllerTest {
     @Test
     @TestDescription("User 등록(정상)")
     public void createNormalUser() throws Exception {
+        int index = 1932;
+        String userId = index + preUsers.getUserVariableId();
+        String userPassword = preUsers.getUserPassword();
+
         mockMvc.perform(post("/api/users")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .accept(MediaTypes.HAL_JSON)
-                .content(objectMapper.writeValueAsString(XUserGenerator.newNormalXUserDto(1))))
+                .content(objectMapper.writeValueAsString(XUserGenerator.newNormalXUserDto(index, userId, userPassword))))
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andDo(document("create-user",
                         requestHeaders(
-                                headerWithName(HttpHeaders.CONTENT_TYPE).description("Content Type header"),
-                                headerWithName(HttpHeaders.ACCEPT).description("Accept Header")
+                                headerWithName(HttpHeaders.CONTENT_TYPE).description("The MIME type of this content"),
+                                headerWithName(HttpHeaders.ACCEPT).description("Media type(s) that is(/are) acceptable for the response")
                         ),
                         requestFields(
                                 fieldWithPath("variableId").description("User name"),
@@ -56,7 +60,7 @@ public class XUserControllerTest extends BaseControllerTest {
                         responseFields(
                                 fieldWithPath("id").description("User ID"),
                                 fieldWithPath("variableId").description("User name"),
-                                fieldWithPath("password").description("User description"),
+                                //fieldWithPath("password").description("User description"),
                                 fieldWithPath("name").description("User startEnrollmentDateTime"),
                                 fieldWithPath("roles").description("User endEnrollmentDateTime"),
                                 fieldWithPath("_links.self.href").description("Link to self"),
@@ -100,16 +104,20 @@ public class XUserControllerTest extends BaseControllerTest {
     @Test
     @TestDescription("User 등록(비정상: 이미 등록된 subId)")
     public void createWrongUser3() throws Exception {
+        int index = 2144;
+        String userId = index + preUsers.getUserVariableId();
+        String userPassword = preUsers.getUserPassword();
+
         ResultActions resultActions = mockMvc.perform(post("/api/users")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .accept(MediaTypes.HAL_JSON)
-                .content(objectMapper.writeValueAsString(XUserGenerator.newNormalXUserDto(2144))))
+                .content(objectMapper.writeValueAsString(XUserGenerator.newNormalXUserDto(index, userId, userPassword))))
                 .andExpect(status().isCreated());
 
         mockMvc.perform(post("/api/users")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .accept(MediaTypes.HAL_JSON)
-                .content(objectMapper.writeValueAsString(XUserGenerator.newNormalXUserDto(2144))))
+                .content(objectMapper.writeValueAsString(XUserGenerator.newNormalXUserDto(index, userId, userPassword))))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
         ;
@@ -118,10 +126,14 @@ public class XUserControllerTest extends BaseControllerTest {
     @Test
     @TestDescription("User 정보 읽기(정상)")
     public void readUser() throws Exception {
+        int index = 543;
+        String userId = index + preUsers.getUserVariableId();
+        String userPassword = preUsers.getUserPassword();
+
         ResultActions resultActions = mockMvc.perform(post("/api/users")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .accept(MediaTypes.HAL_JSON)
-                .content(objectMapper.writeValueAsString(XUserGenerator.newNormalXUserDto(543))))
+                .content(objectMapper.writeValueAsString(XUserGenerator.newNormalXUserDto(index, userId, userPassword))))
                 .andExpect(status().isCreated());
 
         String responseData = resultActions.andReturn().getResponse().getContentAsString();
@@ -135,7 +147,7 @@ public class XUserControllerTest extends BaseControllerTest {
                 .andExpect(jsonPath("id").exists())
                 .andDo(document("read-user",
                         requestHeaders(
-                                headerWithName(HttpHeaders.ACCEPT).description("Accept Header")
+                                headerWithName(HttpHeaders.ACCEPT).description("Media type(s) that is(/are) acceptable for the response")
                         ),
                         responseHeaders(
                                 headerWithName(HttpHeaders.CONTENT_TYPE).description("Content Type header")
@@ -143,7 +155,7 @@ public class XUserControllerTest extends BaseControllerTest {
                         responseFields(
                                 fieldWithPath("id").description("User ID"),
                                 fieldWithPath("variableId").description("User name"),
-                                fieldWithPath("password").description("User description"),
+                                //fieldWithPath("password").description("User description"),
                                 fieldWithPath("name").description("User startEnrollmentDateTime"),
                                 fieldWithPath("roles").description("User endEnrollmentDateTime"),
                                 fieldWithPath("_links.self.href").description("Link to self"),
@@ -175,7 +187,11 @@ public class XUserControllerTest extends BaseControllerTest {
     @TestDescription("여러 개의 User 읽기 테스트(1 페이지, 10개, name/desc 정렬)")
     public void readUsers() throws Exception {
         IntStream.range(0, 30).forEach(i -> {
-            XUserDto userDto = XUserGenerator.newNormalXUserDto(i * 11);
+            int index = i * 11;
+            String userId = index + preUsers.getUserVariableId();
+            String userPassword = preUsers.getUserPassword();
+
+            XUserDto userDto = XUserGenerator.newNormalXUserDto(index, userId, userPassword);
             try {
                 ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
@@ -199,7 +215,7 @@ public class XUserControllerTest extends BaseControllerTest {
                 .andExpect(status().isOk())
                 .andDo(document("read-users",
                         requestHeaders(
-                                headerWithName(HttpHeaders.ACCEPT).description("Accept Header")
+                                headerWithName(HttpHeaders.ACCEPT).description("Media type(s) that is(/are) acceptable for the response")
                         ),
                         requestParameters(
                                 parameterWithName("page").description("request page"),
@@ -212,7 +228,7 @@ public class XUserControllerTest extends BaseControllerTest {
                         responseFields(
                                 fieldWithPath("_embedded.xUserList[].id").description("User ID"),
                                 fieldWithPath("_embedded.xUserList[].variableId").description("User name"),
-                                fieldWithPath("_embedded.xUserList[].password").description("User description"),
+                                //fieldWithPath("_embedded.xUserList[].password").description("User description"),
                                 fieldWithPath("_embedded.xUserList[].name").description("User startEnrollmentDateTime"),
                                 fieldWithPath("_embedded.xUserList[].roles").description("User endEnrollmentDateTime"),
                                 fieldWithPath("_embedded.xUserList[]._links.self.href").description("Link to self"),
@@ -261,7 +277,11 @@ public class XUserControllerTest extends BaseControllerTest {
     @Test
     @TestDescription("User 정보 업데이트하기")
     public void updateUser() throws Exception {
-        XUserDto userDto = XUserGenerator.newNormalXUserDto(9865);
+        int index = 9865;
+        String userId = index + preUsers.getUserVariableId();
+        String userPassword = preUsers.getUserPassword();
+
+        XUserDto userDto = XUserGenerator.newNormalXUserDto(index, userId, userPassword);
 
         ResultActions resultActions = mockMvc.perform(post("/api/users")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
@@ -269,11 +289,9 @@ public class XUserControllerTest extends BaseControllerTest {
                 .content(objectMapper.writeValueAsString(userDto)))
                 .andExpect(status().isCreated());
 
-        final String newVariableId = "newVariableId@hotmail.com";
         final String newName = "New Name";
         final String newPassword = "NewPassword";
 
-        userDto.setVariableId(newVariableId);
         userDto.setName(newName);
         userDto.setPassword(newPassword);
 
@@ -281,6 +299,7 @@ public class XUserControllerTest extends BaseControllerTest {
         JacksonJsonParser jsonParser = new JacksonJsonParser();
         String id = (String) jsonParser.parseMap(responseData).get("id");
         mockMvc.perform(put("/api/users/{id}", id)
+                .header(HttpHeaders.AUTHORIZATION, getUserBearerToken(String.valueOf(index)))
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .accept(MediaTypes.HAL_JSON)
                 .content(objectMapper.writeValueAsString(userDto)))
@@ -288,13 +307,12 @@ public class XUserControllerTest extends BaseControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(header().exists(HttpHeaders.CONTENT_TYPE))
                 .andExpect(jsonPath("id").value(id))
-                .andExpect(jsonPath("variableId").value(newVariableId))
                 .andExpect(jsonPath("name").value(newName))
-                .andExpect(jsonPath("password").value(newPassword))
                 .andDo(document("update-user",
                         requestHeaders(
-                                headerWithName(HttpHeaders.CONTENT_TYPE).description("Content Type header"),
-                                headerWithName(HttpHeaders.ACCEPT).description("Accept Header")
+                                headerWithName(HttpHeaders.AUTHORIZATION).description("Authentication credentials for HTTP authentication"),
+                                headerWithName(HttpHeaders.CONTENT_TYPE).description("The MIME type of this content"),
+                                headerWithName(HttpHeaders.ACCEPT).description("Media type(s) that is(/are) acceptable for the response")
                         ),
                         requestFields(
                                 fieldWithPath("variableId").description("User name"),
@@ -308,7 +326,7 @@ public class XUserControllerTest extends BaseControllerTest {
                         responseFields(
                                 fieldWithPath("id").description("User ID"),
                                 fieldWithPath("variableId").description("User name"),
-                                fieldWithPath("password").description("User description"),
+                                //fieldWithPath("password").description("User description"),
                                 fieldWithPath("name").description("User startEnrollmentDateTime"),
                                 fieldWithPath("roles").description("User endEnrollmentDateTime"),
                                 fieldWithPath("_links.self.href").description("Link to self"),
@@ -328,19 +346,28 @@ public class XUserControllerTest extends BaseControllerTest {
     @Test
     @TestDescription("User 정보 삭제")
     public void deleteUser() throws Exception {
+        int index = 173493;
+        String userId = index + preUsers.getUserVariableId();
+        String userPassword = preUsers.getUserPassword();
+
         ResultActions resultActions = mockMvc.perform(post("/api/users")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .accept(MediaTypes.HAL_JSON)
-                .content(objectMapper.writeValueAsString(XUserGenerator.newNormalXUserDto(1234756))))
+                .content(objectMapper.writeValueAsString(XUserGenerator.newNormalXUserDto(index, userId, userPassword))))
                 .andExpect(status().isCreated());
 
         String responseData = resultActions.andReturn().getResponse().getContentAsString();
         JacksonJsonParser jsonParser = new JacksonJsonParser();
         String id = (String) jsonParser.parseMap(responseData).get("id");
-        mockMvc.perform(delete("/api/users/{id}", id))
+        mockMvc.perform(delete("/api/users/{id}", id)
+                .header(HttpHeaders.AUTHORIZATION, getUserBearerToken(String.valueOf(index))))
                 .andDo(print())
                 .andExpect(status().isNoContent())
-                .andDo(document("delete-user"))
+                .andDo(document("delete-user",
+                        requestHeaders(
+                                headerWithName(HttpHeaders.AUTHORIZATION).description("Authentication credentials for HTTP authentication")
+                        )
+                ))
         ;
     }
 
@@ -348,7 +375,8 @@ public class XUserControllerTest extends BaseControllerTest {
     @TestDescription("존재하지 않는 User 정보 삭제")
     public void deleteWrongUser() throws Exception {
         String id = "1231231231232113132";
-        mockMvc.perform(delete("/api/users/{id}", id))
+        mockMvc.perform(delete("/api/users/{id}", id)
+                .header(HttpHeaders.AUTHORIZATION, getUserBearerToken(null)))
                 .andDo(print())
                 .andExpect(status().isNotFound())
         ;
