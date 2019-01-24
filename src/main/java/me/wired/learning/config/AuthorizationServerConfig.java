@@ -1,6 +1,5 @@
 package me.wired.learning.config;
 
-import me.wired.learning.user.XUserDetailService;
 import me.wired.learning.yaml.PreUsers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;

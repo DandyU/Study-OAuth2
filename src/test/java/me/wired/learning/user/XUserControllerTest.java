@@ -1,10 +1,7 @@
 package me.wired.learning.user;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import me.wired.learning.common.BaseControllerTest;
 import me.wired.learning.common.TestDescription;
-import me.wired.learning.course.CourseDto;
-import me.wired.learning.course.CourseGenerator;
 import org.junit.Test;
 import org.springframework.boot.json.JacksonJsonParser;
 import org.springframework.hateoas.MediaTypes;

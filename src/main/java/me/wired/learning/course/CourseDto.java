@@ -1,17 +1,11 @@
 package me.wired.learning.course;
 
 import lombok.*;
-import me.wired.learning.user.XUser;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.PrePersist;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @NoArgsConstructor
 @AllArgsConstructor

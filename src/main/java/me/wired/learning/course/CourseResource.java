@@ -1,6 +1,5 @@
 package me.wired.learning.course;
 
-import me.wired.learning.user.XUser;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 
