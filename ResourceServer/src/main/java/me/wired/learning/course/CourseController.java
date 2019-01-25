@@ -1,8 +1,8 @@
 package me.wired.learning.course;
 
 import me.wired.learning.common.BaseController;
-import me.wired.learning.user.CurrentXUser;
 import me.wired.learning.user.XUser;
+import me.wired.learning.user.XUserService;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,6 +13,8 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
@@ -30,17 +32,19 @@ public class CourseController extends BaseController {
     private final CourseValidator courseValidator;
     private final CourseService courseService;
     private final ModelMapper modelMapper;
+    private final XUserService xUserService;
 
     public CourseController(CourseValidator courseValidator,
                             CourseServiceImpl courseService,
-                             ModelMapper modelMapper) {
+                            ModelMapper modelMapper, XUserService xUserService) {
         this.courseValidator = courseValidator;
         this.courseService = courseService;
         this.modelMapper = modelMapper;
+        this.xUserService = xUserService;
     }
 
     @PostMapping
-    public ResponseEntity createCourse(@RequestBody @Valid CourseDto courseDto, Errors errors, @CurrentXUser XUser xUser) {
+    public ResponseEntity createCourse(@RequestBody @Valid CourseDto courseDto, Errors errors, @AuthenticationPrincipal OAuth2Authentication authentication) {
         if (errors.hasErrors())
             return badRequest(errors);
 
@@ -50,7 +54,11 @@ public class CourseController extends BaseController {
 
         Course course = modelMapper.map(courseDto, Course.class);
         course.update();
-        course.setUser(xUser);
+        Optional<XUser> optionalXUser = getXUser(xUserService, authentication);
+        if (!optionalXUser.isPresent())
+            return badRequest(setAuthenticationErrors(errors));
+
+        course.setUser(optionalXUser.get());
         Course newCourse = courseService.save(course);
         CourseResource courseResource = new CourseResource(newCourse);
         courseResource.add(new Link("/static/docs/index.html#resources-course-create").withRel("profile"));
@@ -58,7 +66,7 @@ public class CourseController extends BaseController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity readCourse(@PathVariable String id, @CurrentXUser XUser xUser) {
+    public ResponseEntity readCourse(@PathVariable String id) {
         Optional<Course> optionalCourse = courseService.findById(id);
         if (!optionalCourse.isPresent())
             return ResponseEntity.notFound().build();
@@ -70,7 +78,7 @@ public class CourseController extends BaseController {
     }
 
     @GetMapping
-    public ResponseEntity readCourses(Pageable pageable, PagedResourcesAssembler<Course> assembler, @CurrentXUser XUser xUser) {
+    public ResponseEntity readCourses(Pageable pageable, PagedResourcesAssembler<Course> assembler) {
         Page<Course> page = courseService.findAll(pageable);
         PagedResources<Resource<Course>> resource = assembler.toResource(page, e -> new CourseResource(e));
         resource.add(linkTo(CourseController.class).withRel("create-course"));
@@ -79,7 +87,7 @@ public class CourseController extends BaseController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity updateCourse(@PathVariable String id, @RequestBody @Valid CourseDto courseDto, Errors errors, @CurrentXUser XUser xUser) {
+    public ResponseEntity updateCourse(@PathVariable String id, @RequestBody @Valid CourseDto courseDto, Errors errors, @AuthenticationPrincipal OAuth2Authentication authentication) {
         if (errors.hasErrors())
             return badRequest(errors);
 
@@ -92,6 +100,11 @@ public class CourseController extends BaseController {
             return ResponseEntity.notFound().build();
         }
 
+        Optional<XUser> optionalXUser = getXUser(xUserService, authentication);
+        if (!optionalXUser.isPresent())
+            return badRequest(setAuthenticationErrors(errors));
+
+        XUser xUser = optionalXUser.get();
         Course oldCourse = optionalCourse.get();
         if (!xUser.isAdmin() && !oldCourse.getUser().getVariableId().equals(xUser.getVariableId()))
             return new ResponseEntity(HttpStatus.UNAUTHORIZED);
@@ -105,11 +118,16 @@ public class CourseController extends BaseController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity deleteCourse(@PathVariable String id, @CurrentXUser XUser xUser) {
+    public ResponseEntity deleteCourse(@PathVariable String id, @AuthenticationPrincipal OAuth2Authentication authentication) {
         Optional<Course> optionalCourse = courseService.findById(id);
         if (!optionalCourse.isPresent())
             return ResponseEntity.notFound().build();
 
+        Optional<XUser> optionalXUser = getXUser(xUserService, authentication);
+        if (!optionalXUser.isPresent())
+            return ResponseEntity.badRequest().body("XUser not found by principal");
+
+        XUser xUser = optionalXUser.get();
         Course course = optionalCourse.get();
         if (!xUser.isAdmin() && !course.getUser().getVariableId().equals(xUser.getVariableId()))
             return new ResponseEntity(HttpStatus.UNAUTHORIZED);
@@ -119,7 +137,12 @@ public class CourseController extends BaseController {
     }
 
     @DeleteMapping()
-    public ResponseEntity deleteCourses(@CurrentXUser XUser xUser) {
+    public ResponseEntity deleteCourses(@AuthenticationPrincipal OAuth2Authentication authentication) {
+        Optional<XUser> optionalXUser = getXUser(xUserService, authentication);
+        if (!optionalXUser.isPresent())
+            return ResponseEntity.badRequest().body("XUser not found by principal");
+
+        XUser xUser = optionalXUser.get();
         if (!xUser.isAdmin())
             return new ResponseEntity(HttpStatus.UNAUTHORIZED);
 

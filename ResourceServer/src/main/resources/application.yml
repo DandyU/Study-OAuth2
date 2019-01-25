@@ -6,7 +6,7 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: create
     properties:
       hibernate:
         jdbc:
@@ -22,6 +22,7 @@ logging:
           descriptor.sql.BasicBinder: TRACE
       springframework:
         security: DEBUG
+
 pre-user:
   adminVariableId: admin@gmail.com
   adminPassword: admin

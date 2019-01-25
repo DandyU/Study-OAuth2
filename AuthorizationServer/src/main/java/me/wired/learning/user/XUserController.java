@@ -11,7 +11,6 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,7 +20,7 @@ import java.util.Optional;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
-@Controller
+//@Controller
 @RequestMapping(value = "/api/users", produces = MediaTypes.HAL_JSON_UTF8_VALUE)
 public class XUserController extends BaseController {
 

@@ -11,6 +11,8 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
@@ -74,7 +76,7 @@ public class XUserController extends BaseController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity updateUser(@PathVariable String id, @RequestBody @Valid XUserDto userDto, Errors errors, @CurrentXUser XUser xUser) {
+    public ResponseEntity updateUser(@PathVariable String id, @RequestBody @Valid XUserDto userDto, Errors errors, @AuthenticationPrincipal OAuth2Authentication authentication) {
         if (errors.hasErrors())
             return badRequest(errors);
 
@@ -82,8 +84,13 @@ public class XUserController extends BaseController {
         if (!optionalUser.isPresent())
             return ResponseEntity.notFound().build();
 
+        Optional<XUser> optionalAuthXUser = getXUser(xUserService, authentication);
+        if (!optionalAuthXUser.isPresent())
+            return badRequest(setAuthenticationErrors(errors));
+
         XUser oldUser = optionalUser.get();
-        if (!xUser.isAdmin() && !oldUser.getVariableId().equals(xUser.getVariableId()))
+        XUser authUser = optionalAuthXUser.get();
+        if (!authUser.isAdmin() && !oldUser.getVariableId().equals(authUser.getVariableId()))
             return new ResponseEntity(HttpStatus.UNAUTHORIZED);
 
         modelMapper.map(userDto, oldUser);
@@ -95,12 +102,17 @@ public class XUserController extends BaseController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity deleteUser(@PathVariable String id, @CurrentXUser XUser xUser) {
+    public ResponseEntity deleteUser(@PathVariable String id, @AuthenticationPrincipal OAuth2Authentication authentication) {
         Optional<XUser> optionalUser = xUserService.findById(id);
         if (!optionalUser.isPresent())
             return ResponseEntity.notFound().build();
 
-        if (!xUser.isAdmin() && !optionalUser.get().getVariableId().equals(xUser.getVariableId()))
+        Optional<XUser> optionalAuthXUser = getXUser(xUserService, authentication);
+        if (!optionalAuthXUser.isPresent())
+            return ResponseEntity.badRequest().body("XUser not found by principal");
+
+        XUser authUser = optionalAuthXUser.get();
+        if (!authUser.isAdmin() && !optionalUser.get().getVariableId().equals(authUser.getVariableId()))
             return new ResponseEntity(HttpStatus.UNAUTHORIZED);
 
         xUserService.deleteById(id);
