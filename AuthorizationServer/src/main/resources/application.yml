@@ -6,7 +6,7 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: create
     properties:
       hibernate:
         jdbc:
@@ -20,6 +20,7 @@ logging:
   level:
     org:
       hibernate:
+        engine.jdbc.env.internal.LobCreatorBuilderImpl: ERROR
         SQL: DEBUG
         type:
           descriptor.sql.BasicBinder: TRACE

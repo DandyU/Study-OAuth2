@@ -1,5 +1,7 @@
 package me.wired.learning.config;
 
+import me.wired.learning.client.repository.OAuthClientDetails;
+import me.wired.learning.client.repository.OAuthClientDetailsService;
 import me.wired.learning.user.XUser;
 import me.wired.learning.user.XUserRole;
 import me.wired.learning.user.XUserService;
@@ -39,9 +41,16 @@ public class AppConfig {
             @Autowired
             XUserService xUserService;
 
+            @Autowired
+            OAuthClientDetailsService oAuthClientDetailsService;
+
             @Override
             public void run(ApplicationArguments args) throws Exception {
                 // APP 구동 시에 수행할 작업 등록
+                init();
+            }
+
+            private void init() {
                 if (!xUserService.findByVariableId(preUsers.getAdminVariableId()).isPresent()) {
                     XUser user = XUser.builder()
                             .variableId(preUsers.getAdminVariableId())
@@ -57,6 +66,17 @@ public class AppConfig {
                             .roles(new HashSet<>(Arrays.asList(XUserRole.USER)))
                             .build();
                     xUserService.save(user);
+                }
+                if (!oAuthClientDetailsService.findByClientId(preUsers.getClientId()).isPresent()) {
+                    OAuthClientDetails clientDetails = OAuthClientDetails.builder()
+                            .clientId(preUsers.getClientId())
+                            .clientSecret(preUsers.getClientSecret())
+                            .authorizedGrantTypes("password,refresh_token")
+                            .scope("read,write")
+                            .accessTokenValidity(new Integer(30 * 60))
+                            .refreshTokenValidity(new Integer(60 * 60))
+                            .build();
+                    oAuthClientDetailsService.save(clientDetails);
                 }
             }
 

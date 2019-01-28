@@ -10,21 +10,21 @@ import java.util.stream.Collectors;
 
 public class XUserAdapter extends User {
 
-    private XUser xUser;
+    private transient XUser xUser;
+
+    public XUser getXUser() {
+        return xUser;
+    }
 
     public XUserAdapter(XUser xUser) {
         super(xUser.getVariableId(), xUser.getPassword(), authorities(xUser.getRoles()));
-        this.xUser = xUser;
+        //this.xUser = xUser;
     }
 
     private static Collection<? extends GrantedAuthority> authorities(Set<XUserRole> roles) {
         return roles.stream()
                 .map(r -> new SimpleGrantedAuthority("ROLE_" + r.name()))
                 .collect(Collectors.toSet());
-    }
-
-    public XUser getXUser() {
-        return xUser;
     }
 
 }
