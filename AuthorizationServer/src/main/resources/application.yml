@@ -34,6 +34,12 @@ pre-user:
   clientId: client@gmail.com
   clientSecret: client
 
+security:
+  oauth2:
+    resource:
+      jwt:
+        key-value: secret
+
 ---
 spring:
   profiles: test

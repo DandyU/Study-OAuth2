@@ -1,47 +1,55 @@
 package me.wired.learning.config;
 
-import me.wired.learning.client.XJdbcClientDetailsService;
-import me.wired.learning.yaml.PreUsers;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
+import me.wired.learning.user.XUserDetailService;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.boot.autoconfigure.security.oauth2.authserver.AuthorizationServerProperties;
+import org.springframework.boot.autoconfigure.security.oauth2.authserver.OAuth2AuthorizationServerConfiguration;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
-import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.ClientDetailsService;
-import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService;
-import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore;
-
-import javax.sql.DataSource;
+import org.springframework.security.oauth2.provider.client.BaseClientDetails;
+import org.springframework.security.oauth2.provider.token.AccessTokenConverter;
+import org.springframework.security.oauth2.provider.token.TokenStore;
 
 @Configuration
 @EnableAuthorizationServer
-public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {
+public class AuthorizationServerConfig extends OAuth2AuthorizationServerConfiguration {
 
-    @Autowired
-    AuthenticationManager authenticationManager; // WebSecurityConfig에 Bean으로 등록
+    private final PasswordEncoder passwordEncoder;
+    private final XUserDetailService xUserDetailService;
+    private final ClientDetailsService clientDetailsService;
+    private final TokenStore tokenStore;
+    private final AccessTokenConverter tokenConverter;
+    private final BaseClientDetails details;
+    private final AuthenticationConfiguration authenticationConfiguration;
 
-    @Autowired
-    PreUsers preUsers;
-
-    @Autowired
-    PasswordEncoder passwordEncoder;
-
-    @Autowired
-    ClientDetailsService clientDetailsService;
-
-    @Autowired
-    JdbcTokenStore tokenStore;
+    public AuthorizationServerConfig(PasswordEncoder passwordEncoder,
+                                     XUserDetailService xUserDetailService,
+                                     BaseClientDetails details,
+                                     AuthenticationConfiguration authenticationConfiguration,
+                                     ObjectProvider<TokenStore> tokenStore,
+                                     ObjectProvider<AccessTokenConverter> tokenConverter,
+                                     AuthorizationServerProperties properties,
+                                     ClientDetailsService clientDetailsService) throws Exception {
+        super(details, authenticationConfiguration, tokenStore, tokenConverter, properties);
+        this.passwordEncoder = passwordEncoder;
+        this.xUserDetailService = xUserDetailService;
+        this.tokenConverter = tokenConverter.getObject();
+        this.tokenStore = tokenStore.getObject();
+        this.details = details;
+        this.authenticationConfiguration = authenticationConfiguration;
+        this.clientDetailsService = clientDetailsService;
+    }
 
     @Override
     public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
         security.passwordEncoder(passwordEncoder)
-                .tokenKeyAccess("permitAll()")
+                .tokenKeyAccess("isAuthenticated()")
                 .checkTokenAccess("isAuthenticated()")
         ;
     }
@@ -61,21 +69,20 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 
     @Override
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
-        endpoints.authenticationManager(authenticationManager)
+        /*endpoints.authenticationManager(authenticationManager)
                 //.tokenStore(new InMemoryTokenStore())
-                .tokenStore(tokenStore) // TokenStore를 DB로 지정
-                ;
-    }
-
-    @Bean
-    @Primary
-    public JdbcClientDetailsService jdbcClientDetailsService(DataSource dataSource) {
-        return new XJdbcClientDetailsService(dataSource);
-    }
-
-    @Bean
-    public JdbcTokenStore tokenStore(DataSource dataSource) {
-        return new JdbcTokenStore(dataSource);
+                .tokenStore(tokenStore)
+                ;*/
+        endpoints.userDetailsService(xUserDetailService);
+        if (this.tokenConverter != null) {
+            endpoints.accessTokenConverter(tokenConverter);
+        }
+        if (this.tokenStore != null) {
+            endpoints.tokenStore(tokenStore);
+        }
+        if (this.details.getAuthorizedGrantTypes().contains("password")) {
+            endpoints.authenticationManager(authenticationConfiguration.getAuthenticationManager());
+        }
     }
 
 }

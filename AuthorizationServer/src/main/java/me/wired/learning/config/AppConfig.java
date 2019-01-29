@@ -71,7 +71,7 @@ public class AppConfig {
                     OAuthClientDetails clientDetails = OAuthClientDetails.builder()
                             .clientId(preUsers.getClientId())
                             .clientSecret(preUsers.getClientSecret())
-                            .authorizedGrantTypes("password,refresh_token")
+                            .authorizedGrantTypes("authorization_code,password,client_credentials,implicit,refresh_token")
                             .scope("read,write")
                             .accessTokenValidity(new Integer(30 * 60))
                             .refreshTokenValidity(new Integer(60 * 60))

@@ -31,6 +31,7 @@ dependencies {
     compileOnly "org.springframework.boot:spring-boot-configuration-processor"
     compile 'org.modelmapper:modelmapper:2.3.2'
     compile 'org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:2.1.2.RELEASE'
+    compile 'org.springframework.security:spring-security-jwt'
 
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
