@@ -1,5 +1,6 @@
 package me.wired.learning.config;
 
+import lombok.RequiredArgsConstructor;
 import me.wired.learning.yaml.PreUsers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -29,19 +30,11 @@ import java.util.Map;
 @Configuration
 @EnableResourceServer
 @EnableConfigurationProperties(PreUsers.class) // Configuration에서 Component를 사용하기 위함
+@RequiredArgsConstructor
 public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
 
-    @Autowired
-    PreUsers preUsers;
-
-    @Autowired
-    JwtAccessTokenConverter accessTokenConverter;
-
-    @Autowired
-    PasswordEncoder passwordEncoder;
-
-    @Autowired
-    TokenStore jwtTokenStore;
+    private final PreUsers preUsers;
+    private final TokenStore jwtTokenStore;
 
     @Override
     public void configure(ResourceServerSecurityConfigurer resources) throws Exception {

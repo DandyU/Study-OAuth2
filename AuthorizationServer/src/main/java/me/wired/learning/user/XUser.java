@@ -19,6 +19,7 @@ public class XUser {
     @Id
     private String id;
 
+    @Column(nullable = false, unique = true)
     private String variableId;
 
     @JsonIgnore
@@ -35,7 +36,6 @@ public class XUser {
         this.setId(UUID.randomUUID().toString());
     }
 
-    @JsonIgnore
     public boolean isAdmin() {
         if (roles.contains(XUserRole.ADMIN))
             return true;

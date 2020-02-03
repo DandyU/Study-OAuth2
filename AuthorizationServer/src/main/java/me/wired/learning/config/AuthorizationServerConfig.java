@@ -1,5 +1,6 @@
 package me.wired.learning.config;
 
+import me.wired.learning.client.CustomClientDetailsService;
 import me.wired.learning.user.XUserDetailService;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.security.oauth2.authserver.AuthorizationServerProperties;
@@ -11,7 +12,6 @@ import org.springframework.security.oauth2.config.annotation.configurers.ClientD
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
-import org.springframework.security.oauth2.provider.ClientDetailsService;
 import org.springframework.security.oauth2.provider.client.BaseClientDetails;
 import org.springframework.security.oauth2.provider.token.AccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.TokenStore;
@@ -22,28 +22,28 @@ public class AuthorizationServerConfig extends OAuth2AuthorizationServerConfigur
 
     private final PasswordEncoder passwordEncoder;
     private final XUserDetailService xUserDetailService;
-    private final ClientDetailsService clientDetailsService;
+    private final CustomClientDetailsService customClientDetailsService;
     private final TokenStore tokenStore;
     private final AccessTokenConverter tokenConverter;
-    private final BaseClientDetails details;
+    private final BaseClientDetails baseClientDetails;
     private final AuthenticationConfiguration authenticationConfiguration;
 
     public AuthorizationServerConfig(PasswordEncoder passwordEncoder,
                                      XUserDetailService xUserDetailService,
-                                     BaseClientDetails details,
+                                     BaseClientDetails baseClientDetails,
                                      AuthenticationConfiguration authenticationConfiguration,
                                      ObjectProvider<TokenStore> tokenStore,
                                      ObjectProvider<AccessTokenConverter> tokenConverter,
                                      AuthorizationServerProperties properties,
-                                     ClientDetailsService clientDetailsService) throws Exception {
-        super(details, authenticationConfiguration, tokenStore, tokenConverter, properties);
+                                     CustomClientDetailsService customClientDetailsService) throws Exception {
+        super(baseClientDetails, authenticationConfiguration, tokenStore, tokenConverter, properties);
         this.passwordEncoder = passwordEncoder;
         this.xUserDetailService = xUserDetailService;
         this.tokenConverter = tokenConverter.getObject();
         this.tokenStore = tokenStore.getObject();
-        this.details = details;
+        this.baseClientDetails = baseClientDetails;
         this.authenticationConfiguration = authenticationConfiguration;
-        this.clientDetailsService = clientDetailsService;
+        this.customClientDetailsService = customClientDetailsService;
     }
 
     @Override
@@ -64,7 +64,8 @@ public class AuthorizationServerConfig extends OAuth2AuthorizationServerConfigur
                 .accessTokenValiditySeconds(10 * 60)
                 .refreshTokenValiditySeconds(30 * 60)
                 ;*/
-        clients.withClientDetails(clientDetailsService); // ClientDetails를 DB를 참조하도록 함
+
+        clients.withClientDetails(customClientDetailsService); // ClientDetails를 DB를 참조하도록 함
     }
 
     @Override
@@ -73,16 +74,16 @@ public class AuthorizationServerConfig extends OAuth2AuthorizationServerConfigur
                 //.tokenStore(new InMemoryTokenStore())
                 .tokenStore(tokenStore)
                 ;*/
+
         endpoints.userDetailsService(xUserDetailService);
-        if (this.tokenConverter != null) {
+        endpoints.reuseRefreshTokens(false);
+        if (this.tokenConverter != null)
             endpoints.accessTokenConverter(tokenConverter);
-        }
-        if (this.tokenStore != null) {
+        if (this.tokenStore != null)
             endpoints.tokenStore(tokenStore);
-        }
-        if (this.details.getAuthorizedGrantTypes().contains("password")) {
+        if (this.baseClientDetails.getAuthorizedGrantTypes().contains("password"))
             endpoints.authenticationManager(authenticationConfiguration.getAuthenticationManager());
-        }
     }
 
 }
+

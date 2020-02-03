@@ -68,13 +68,17 @@ public class AppConfig {
                     xUserService.save(user);
                 }
                 if (!oAuthClientDetailsService.findByClientId(preUsers.getClientId()).isPresent()) {
+                    final String grantTypes = "authorization_code,password,client_credentials,implicit,refresh_token";
+                    final String scope = "read,write";
                     OAuthClientDetails clientDetails = OAuthClientDetails.builder()
                             .clientId(preUsers.getClientId())
                             .clientSecret(preUsers.getClientSecret())
-                            .authorizedGrantTypes("authorization_code,password,client_credentials,implicit,refresh_token")
-                            .scope("read,write")
-                            .accessTokenValidity(new Integer(30 * 60))
-                            .refreshTokenValidity(new Integer(60 * 60))
+                            .authorizedGrantTypes(grantTypes)
+                            .autoApproveScope("read,write")
+                            .scope(scope)
+                            .registeredRedirectUri("http://localhost:8081/oauth/callback")
+                            .accessTokenValiditySeconds(Integer.valueOf(60 * 60))
+                            .refreshTokenValiditySeconds(Integer.valueOf(60 * 60 * 24))
                             .build();
                     oAuthClientDetailsService.save(clientDetails);
                 }

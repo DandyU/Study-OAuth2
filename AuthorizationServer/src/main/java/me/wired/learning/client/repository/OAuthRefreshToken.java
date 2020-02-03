@@ -1,10 +1,13 @@
 package me.wired.learning.client.repository;
 
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import java.time.LocalDateTime;
 
 @Entity
 @AllArgsConstructor
@@ -19,8 +22,17 @@ public class OAuthRefreshToken {
     @Column(nullable = false, updatable = false)
     private String tokenId;
 
-    private Byte[] token;
+    @Column(length = 128000)
+    private byte[] token;
 
-    private Byte[] authentication;
+    @Column(length = 128000)
+    private byte[] authentication;
+
+    @CreationTimestamp
+    @Column(updatable = false)
+    private LocalDateTime insertedDateTime;
+
+    @UpdateTimestamp
+    private LocalDateTime updatedDateTime;
 
 }

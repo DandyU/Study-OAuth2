@@ -24,7 +24,7 @@ public class OAuthClientDetailsServiceImpl implements OAuthClientDetailsService 
 
     @Override
     public Optional<OAuthClientDetails> findByClientId(String clientId) {
-        return oAuthClientDetailsRepository.findById(clientId);
+        return oAuthClientDetailsRepository.findByClientId(clientId);
     }
 
 }

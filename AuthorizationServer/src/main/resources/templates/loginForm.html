@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta charset="UTF-8">
+    <title>로그인</title>
+</head>
+
+<body onload="document.f.username.focus();">
+<h3>로그인</h3>
+<form name="f" action="/login" method="POST">
+    <table>
+        <tbody>
+        <tr>
+            <td>ID:</td>
+            <td><input type="text" name="username" value=""></td>
+        </tr>
+        <tr>
+            <td>Password:</td>
+            <td><input type="password" name="password"></td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <input name="submit" type="submit" value="로그인">
+            </td>
+        </tr>
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <!--<input name="${_csrf.parameterName}" type="hidden" value="${_csrf.token}">-->
+        </tbody>
+    </table>
+</form>
+
+</body>
+
+</html>

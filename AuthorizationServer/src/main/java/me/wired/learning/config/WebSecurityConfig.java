@@ -12,6 +12,8 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.servlet.support.csrf.CsrfRequestDataValueProcessor;
+import org.springframework.web.servlet.support.RequestDataValueProcessor;
 
 @Configuration
 @EnableWebSecurity
@@ -46,11 +48,18 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     //HttpSecurity 설정은 Spring Security 레벨에서 처리됨 더 많은 작업을 함
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.anonymous()
+        http
+                .formLogin()
+                .loginPage("/loginForm")
+                .loginProcessingUrl("/login")
+                .defaultSuccessUrl("/")
+                .and()
+                /*.csrf().disable()*/
+                .anonymous()
                 .and()
                 .authorizeRequests()
-                .antMatchers("/oauth/**").permitAll()
-                .anyRequest().authenticated()
+                .antMatchers("/oauth/**", "/loginForm").permitAll()
+                .anyRequest().authenticated();
         ;
     }
 

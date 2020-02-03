@@ -1,9 +1,9 @@
 spring:
   datasource:
-    username: yuseon
-    password: yuseon
-    url: jdbc:postgresql://localhost:5432/postgres
-    driver-class-name: org.postgresql.Driver
+    username: devuser
+    password: dev
+    url: jdbc:mariadb://localhost:3306/auth
+    dirver-class-name: org.mariadb.jdbc.Driver
   jpa:
     hibernate:
       ddl-auto: create
@@ -13,6 +13,12 @@ spring:
           lob:
             non_contextual_create: true
         format_sql: true
+
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
 logging:
   level:
     org:
