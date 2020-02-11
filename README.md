@@ -2,7 +2,7 @@
 
 > V0.4.1
  - Grant Type이 설정 안되는 문제 수정
- - Refresh Token DB에 저장 관리하도록 함, 1회용으로 관리
+ - Refresh Token을 DB에 저장하여 관리하도록 함, 1회
 
 > V0.4.0
  - JWT 적용
